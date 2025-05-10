@@ -1,0 +1,21 @@
+name: pipeline-frontend
+
+on:
+    push:
+        branches: ["develop"]
+jobs:
+    Deploy:
+        runs-on: ubuntu-latest
+        steps:
+        - name: install ssh keys 
+          uses: appleboy/ssh-action@v1.0.3
+          with:
+            host: ${{ secrets.SSH_HOST }}
+            username: ${{ secrets.SSH_USER }}
+            key: ${{ secrets.SSH_PRIVATE_KEY }}
+            script: |
+              cd frontend 
+              git pull
+              docker compose docker-compose.yml up --build -d
+    
+    

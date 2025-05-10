@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  frontend:
+    container_name: ctfrontend
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    labels:
+      - "traefik.http.routers.frontend.rule=Host(`redgtech.cloud`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls=true"
+      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+      - "traefik.http.services.frontend.loadbalancer.server.port=5173"
+    ports:
+      - "5173:5173"
+    networks:
+      - redgtech-network
+
+networks:
+  redgtech-network:
+    external: true # Certifique-se de que a rede já existe
