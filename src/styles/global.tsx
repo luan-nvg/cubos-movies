@@ -8,9 +8,9 @@ export const GlobalStyle = createGlobalStyle`
         --white: #fff;
         --disabled: #535664;
 
-        --primary: #8e4ec6;
-        --light-primary: #3699FF;
-        --primary-hover: #095597;
+        --primary: #8e4ec6;          /* Roxo principal */
+        --light-primary: #b88ae3;    /* Roxo mais claro */
+        --primary-hover: #6c39a3;    /* Roxo mais escuro para hover */
 
         --error: #DC2626;
         --success: #16A34A;

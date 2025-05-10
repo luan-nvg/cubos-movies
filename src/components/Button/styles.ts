@@ -2,7 +2,7 @@ import { Button } from "@/components/Shared"
 import styled from "styled-components"
 
 export const ButtonComponent = styled(Button)`
-  background-color: var(--light-primary);
+  background-color: var(--primary);
   color: var(--white);
   font-size: var(--sm);
   font-weight: var(--semibold);

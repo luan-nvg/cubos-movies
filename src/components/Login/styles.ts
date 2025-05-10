@@ -3,64 +3,74 @@ import styled from "styled-components"
 
 export const PageWrapper = styled.div`
   display: flex;
-  justify-content: center;
-  width: 100vw;
-  height: 100vh;
-`
-
-export const BannerWrapper = styled.div`
-  width: 60%;
-  height: 90%;
-  background-color: #1e3a8a; /* Cor de fundo semelhante à imagem */
-  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-size: 1.5rem;
-  font-weight: bold;
+  flex-grow: 1;
+  width: 100%;
+  position: relative;
+`
+export const BannerWrapper = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  z-index: 0;
 
-  @media screen and (max-width: 768px) {
-    display: none;
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
   }
 `
 
-export const Banner = styled.img`
+export const Banner = styled.div<{ src: string }>`
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  background-image: url(${props => props.src});
+  background-size: cover;
+  background-position: center;
+  opacity: 0.7;
 `
 
 export const FormSection = styled.div<{ banner: string | undefined }>`
-  width: ${({ banner }) => (banner ? "70%" : "100%")};
+  width: 100%;
+  max-width: 500px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
+  z-index: 1;
+  background-color: #232225;
+  padding: 2rem;
+  border-radius: 8px;
+  margin: 2rem auto;
+  box-sizing: border-box; // Garante que padding não aumente a largura
 
   @media screen and (max-width: 768px) {
-    width: 100%;
-  }
-
-  @media screen and (max-width: 400px) {
-    margin: 0 1rem;
+    width: 90%;
+    padding: 1.5rem;
   }
 `
 
 export const Wrapper = styled.section`
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   flex-direction: column;
   width: 100%;
-  height: 100%;
 `
 
 export const WrapperHeader = styled.div`
-  position: absolute;
-  top: 0.313rem;
-  padding: 0.625rem;
-  right: 1rem;
+  width: 100%;
   display: flex;
+  justify-content: flex-end;
+  padding: 0.625rem;
   gap: 0.625rem;
 `
 
@@ -72,7 +82,7 @@ export const RegisterNewAccount = styled.p`
   font-weight: 500;
   font-family: Poppins, Helvetica, "sans-serif";
   font-size: 1.6rem;
-  color: gray;
+  color: #e2e8f0;
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -99,16 +109,11 @@ export const RegisterNewAccount = styled.p`
 `
 
 export const FormWrapper = styled.div`
-  width: 50%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex-grow: 1;
-
-  @media screen and (max-width: 768px) {
-    width: 100%;
-  }
 `
 
 export const Main = styled.main`
@@ -121,7 +126,7 @@ export const Main = styled.main`
 
   h2 {
     font-size: 3rem;
-    color: #3f4254;
+    color: #ffffff;
     width: 75%;
     font-weight: 500;
     text-align: center;
@@ -137,7 +142,8 @@ export const Main = styled.main`
 `
 
 export const Form = styled.form`
-  width: 400px;
+  width: 100%;
+  max-width: 400px;
 
   @media screen and (max-width: 768px) {
     width: 100%;
@@ -150,6 +156,7 @@ export const FieldWrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: start;
+  gap: 8px;
 `
 
 export const RememberMyAcess = styled.div`
@@ -187,10 +194,21 @@ export const ForgotPasswordWrapper = styled.div`
   }
 `
 
-export const Footer = styled.footer`
+export const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
   width: 100%;
+  overflow-x: hidden; // Previne scroll horizontal
+  position: relative;
+  background-color: #000;
+`
+
+export const Footer = styled.footer`
   text-align: center;
   color: #94a3b8;
-  font-size: var(--md);
-  padding-bottom: 1rem;
+  font-size: 1.5rem;
+  padding: 1rem;
+  width: 100%;
+  box-sizing: border-box;
 `

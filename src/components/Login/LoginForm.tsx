@@ -9,6 +9,7 @@ import { ButtonComponent } from "@/components/Button/styles"
 import { useAuth } from "@/contexts/AuthContext"
 import AnimatedAlert from "@/components/Alert/AnimatedAlert"
 import axios from "axios"
+import { useTheme } from "../../hooks/useTheme"
 
 export function LoginForm() {
   const {
@@ -23,6 +24,8 @@ export function LoginForm() {
     message: string
     type: "success" | "error" | "warning"
   } | null>(null)
+
+  const { theme } = useTheme()
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -72,11 +75,6 @@ export function LoginForm() {
 
   return (
     <S.Main>
-      <Typography as="h2" size="4rem" color="#020617">
-        Login Conta
-      </Typography>
-      <h3>Digite seu nome de usuário e senha</h3>
-
       {alert && (
         <AnimatedAlert
           message={alert.message}
@@ -94,14 +92,30 @@ export function LoginForm() {
 
       <S.Form onSubmit={handleSubmit(handleLogin)}>
         <S.FieldWrapper>
+          <Typography
+            as="h1"
+            size="1.5rem"
+            color={theme === "light" ? "var(--black)" : "var(--white)"}
+          >
+            Nome/E-mail
+          </Typography>
+
           <Input
-            placeholder="seuemail@email.com"
+            placeholder="Digite seu nome/E-mail"
             id="email"
             type="text"
             {...register("email")}
           />
         </S.FieldWrapper>
         <S.FieldWrapper>
+          <Typography
+            as="h1"
+            size="1.5rem"
+            color={theme === "light" ? "var(--black)" : "var(--white)"}
+          >
+            Senha
+          </Typography>
+
           <Input
             placeholder="Digite a sua senha"
             type="password"
@@ -111,6 +125,15 @@ export function LoginForm() {
         </S.FieldWrapper>
 
         <S.LinksWrapper>
+          <Typography
+            as="h1"
+            size="1.5rem"
+            color={theme === "light" ? "var(--black)" : "var(--white)"}
+            textdecoration="underline"
+          >
+            Esqueci minha senha
+          </Typography>
+
           <ButtonComponent type="submit" textbutton="Entrar" />
         </S.LinksWrapper>
       </S.Form>
