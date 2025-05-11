@@ -5,12 +5,14 @@ import { Button } from "@/components/Button"
 import ThemeToggle from "@/components/ThemeToggle"
 import onLogout from "@/services/Auth/Logout"
 import { useTheme } from "@/hooks/useTheme"
+import { useAuth } from "@/contexts/AuthContext" // Importe o contexto de autenticação
 
 import Logo from "@/components/Logo" // Importa o Divider
 
 export function Header() {
   const { title } = useTitle() // Obtém o título do contexto
   const { theme } = useTheme()
+  const { isAuthenticated } = useAuth() // Obtém o estado de autenticação
 
   return (
     <>
@@ -21,15 +23,17 @@ export function Header() {
           </S.titleWrapper>
           <S.rightSection>
             <ThemeToggle />
-            <Button
-              textbutton="Logout"
-              bgcolor={"var(--primary)"}
-              textcolor={"var(--white)"}
-              onClick={() => {
-                onLogout()
-                window.location.href = "/login"
-              }}
-            />
+            {isAuthenticated && ( // Renderiza o botão apenas se autenticado
+              <Button
+                textbutton="Logout"
+                bgcolor={"var(--primary)"}
+                textcolor={"var(--white)"}
+                onClick={() => {
+                  onLogout()
+                  window.location.href = "/login"
+                }}
+              />
+            )}
           </S.rightSection>
         </S.headSectionWrapper>
         <Divider />
