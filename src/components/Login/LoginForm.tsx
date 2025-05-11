@@ -105,6 +105,13 @@ export function LoginForm() {
             id="email"
             type="text"
             {...register("email")}
+            backgroundcolor={theme === "light" ? "var(--white)" : "#1a191c"}
+            placeholdercolor="#6f6d78"
+            style={{
+              border: "2px solid", // ou use borderColor em vez de border
+              borderColor: theme === "light" ? "var(--black)" : "#232225",
+              color: theme === "light" ? "var(--black)" : "var(--white)"
+            }}
           />
         </S.FieldWrapper>
         <S.FieldWrapper>
@@ -121,6 +128,13 @@ export function LoginForm() {
             type="password"
             id="senha"
             {...register("password")}
+            backgroundcolor={theme === "light" ? "var(--white)" : "#1a191c"}
+            placeholdercolor="#6f6d78"
+            style={{
+              border: "2px solid", // ou use borderColor em vez de border
+              borderColor: theme === "light" ? "var(--black)" : "#232225",
+              color: theme === "light" ? "var(--black)" : "var(--white)"
+            }}
           />
         </S.FieldWrapper>
 
@@ -128,7 +142,8 @@ export function LoginForm() {
           <Typography
             as="h1"
             size="1.5rem"
-            color={theme === "light" ? "var(--black)" : "var(--white)"}
+            // color={theme === "light" ? "var(--black)" : "var(--white)"}
+            color={"var(--primary)"}
             textdecoration="underline"
           >
             Esqueci minha senha

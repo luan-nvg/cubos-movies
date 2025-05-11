@@ -1,10 +1,13 @@
 import { LoginForm } from "./LoginForm"
 import { LoginProps } from "./interface"
 import * as S from "./styles"
+import { Header } from "@/components/Header"
+import { Divider } from "@/components/Divider" // Importa o Divider
 
 export const Login = ({ banner }: LoginProps) => {
   return (
     <S.Container>
+      <Header />
       <S.PageWrapper>
         {banner && (
           <S.BannerWrapper>
@@ -22,7 +25,7 @@ export const Login = ({ banner }: LoginProps) => {
           </S.Wrapper>
         </S.FormSection>
       </S.PageWrapper>
-
+      <Divider />
       <S.Footer>2025 © Todos os direitos reservados a Cubos Movies</S.Footer>
     </S.Container>
   )

@@ -2,13 +2,31 @@ import { Avatar, Toggle } from "@/components/Shared"
 import styled from "styled-components"
 
 export const Wrapper = styled.header`
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  background-color: var(--white);
+  height: 60px;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(0, 0, 0, 0.6) 30%,
+    rgba(0, 0, 0, 0.4) 50%,
+    rgba(0, 0, 0, 0.2) 70%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  color: white;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  user-select: none;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+
+  box-sizing: border-box;
 `
 
 export const titleWrapper = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
 `
 
@@ -20,16 +38,12 @@ export const ProfileDiv = styled.header`
   padding-right: 16px;
 `
 
-interface TitleProps {
-  fontSize?: string
-  color?: string
-}
-
-export const Title = styled.h1<TitleProps>`
+export const Title = styled.h1`
   font-family: Poppins, Helvetica, "sans-serif";
-  font-size: ${props => props.fontSize || "13px"};
-  font-weight: 500;
-  color: ${props => props.color || "var(--black)"};
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--white);
+  margin: 0;
 `
 
 export const Profile = styled(Avatar)`
@@ -48,11 +62,13 @@ export const headSectionWrapper = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 1.5rem 2.5rem;
+  height: 60px;
+  width: 100%;
 `
 
 export const rightSection = styled.div`
   display: flex;
   align-items: center;
   gap: 16px;
+  padding-right: 3rem;
 `

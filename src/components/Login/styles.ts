@@ -34,8 +34,9 @@ export const Banner = styled.div<{ src: string }>`
   height: 100%;
   background-image: url(${props => props.src});
   background-size: cover;
-  background-position: center;
-  opacity: 0.7;
+  background-position: center 30%; /* Isso posiciona a imagem mais para baixo (70% da altura) */
+
+  opacity: 0.6;
 `
 
 export const FormSection = styled.div<{ banner: string | undefined }>`
@@ -207,7 +208,7 @@ export const Container = styled.div`
 export const Footer = styled.footer`
   text-align: center;
   color: #94a3b8;
-  font-size: 1.5rem;
+  font-size: 1rem;
   padding: 1rem;
   width: 100%;
   box-sizing: border-box;
