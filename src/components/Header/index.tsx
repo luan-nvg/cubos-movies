@@ -19,7 +19,9 @@ export function Header() {
       <S.Wrapper theme={theme}>
         <S.headSectionWrapper>
           <S.titleWrapper>
-            <S.Title>{title || <Logo />}</S.Title>
+            <S.Title>
+              <Logo />
+            </S.Title>
           </S.titleWrapper>
           <S.rightSection>
             <ThemeToggle />

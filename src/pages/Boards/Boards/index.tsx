@@ -116,7 +116,6 @@ const Boards = () => {
         <S.SectionSubtitle>
           <SectionTitle fontSize="var(--md)" title="Listar Placas" />
         </S.SectionSubtitle>
-        <Divider width="calc(100% + 8.8rem)" margin="0 0 0 -4.4rem" />
 
         <Table
           checkbox={false}

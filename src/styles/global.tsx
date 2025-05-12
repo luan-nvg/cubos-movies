@@ -3,14 +3,15 @@ import { createGlobalStyle } from "styled-components"
 export const GlobalStyle = createGlobalStyle`
     :root {
         // COLORS
-        --black: black;
+        --black: #121114;
         --secondary-text: #54565c;
         --white: #fff;
         --disabled: #535664;
 
-        --primary: #8e4ec6;          /* Roxo principal */
-        --light-primary: #b88ae3;    /* Roxo mais claro */
-        --primary-hover: #6c39a3;    /* Roxo mais escuro para hover */
+        --primary: #8e4ec6;          
+        --light-primary: #b88ae3;    
+        --primary-hover: #6c39a3;   
+        --secondary-fix: #3d2747
 
         --error: #DC2626;
         --success: #16A34A;

@@ -26,20 +26,38 @@ export const PageContent = styled.main`
   background-color: var(--bg-default);
 
   .page-content {
+    margin-top: 10rem;
     padding: 2rem;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-
     background-color: ${props =>
       props.theme === "light" ? "var(--white)" : "var(--black)"};
-
     border-radius: 5px;
     align-items: left;
-    height: 100%;
     width: 100%;
     gap: 2.4rem;
     height: fit-content;
+  }
+
+  /* === SCROLLBAR OMITIDO PARA FOCO NO RESPONSIVO === */
+
+  /* ✅ Estilos específicos para mobile (até 414px) */
+  @media (max-width: 414px) {
+    .page-content {
+      padding: 1rem;
+      margin-top: 5rem;
+      gap: 1rem;
+      font-size: 14px;
+    }
+  }
+
+  /* ✅ Estilos específicos para desktop full HD (1366px ou mais) */
+  @media (min-width: 1366px) {
+    .page-content {
+      max-width: 1280px;
+      margin: 10rem auto 0;
+    }
   }
 
   ::-webkit-scrollbar {

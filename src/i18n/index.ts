@@ -1,13 +1,13 @@
-import { createIntl, createIntlCache, IntlShape } from "react-intl";
+import { createIntl, createIntlCache, IntlShape } from "react-intl"
 
 // Tipagem para os objetos de mensagens
-type MessageDescriptor = { [key: string]: string };
+type MessageDescriptor = { [key: string]: string }
 
 // Mensagens para português (Brasil)
 const ptBR: MessageDescriptor = {
   "board.details.title": "Detalhes da Placa: {name}",
   "board.detail": "Detalhe {name}",
-  "general.report": "Relatório",
+  "general.report": "Filtros",
   "board.chart.title": "Detalhamento da Placa:",
   "report.type.label": "Tipo de Relatório",
   "dropdown.select.type": "Selecionar Tipo",
@@ -35,8 +35,8 @@ const ptBR: MessageDescriptor = {
   "general.lvl.pumpkin": "Abóbora: Acima do nível mínimo (Enchendo)",
   "general.lvl.red": "Vermelho: Abaixo do nível mínimo",
   "general.channels": "Canais",
-  "general.channels.input": "Entradas",
-};
+  "general.channels.input": "Entradas"
+}
 
 // Mensagens para inglês
 const enUS: MessageDescriptor = {
@@ -60,17 +60,17 @@ const enUS: MessageDescriptor = {
   "general.dropdown.reservoir_buoy_monitoring": "Reservoir Buoy Monitoring",
   "general.dropdown.water_tank_monitoring": "Water Tank Monitoring",
   "general.dropdown.reservoir_monitoring": "Reservoir Monitoring",
-  "general.dropdown.scheduling": "Scheduling",
-};
+  "general.dropdown.scheduling": "Scheduling"
+}
 
 // Tipagem do objeto de mensagens por idioma
 export const messages: Record<string, MessageDescriptor> = {
   "pt-BR": ptBR,
-  "en-US": enUS,
-};
+  "en-US": enUS
+}
 
 // Criação do cache e função de instância do Intl
-const cache = createIntlCache();
+const cache = createIntlCache()
 
 export const createI18n = (
   locale: keyof typeof messages = "pt-BR"
@@ -78,16 +78,16 @@ export const createI18n = (
   return createIntl(
     {
       locale,
-      messages: messages[locale],
+      messages: messages[locale]
     },
     cache
-  );
-};
+  )
+}
 
 // Função para detectar o idioma do navegador
 export const detectBrowserLanguage = (): keyof typeof messages => {
-  const browserLang = navigator.language || (navigator as any).userLanguage;
+  const browserLang = navigator.language || (navigator as any).userLanguage
   return messages[browserLang]
     ? (browserLang as keyof typeof messages)
-    : "pt-BR";
-};
+    : "pt-BR"
+}
