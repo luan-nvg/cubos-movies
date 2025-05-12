@@ -30,15 +30,10 @@ export const createMovie: RequestHandler = async (req, res) => {
       releaseDate: new Date(req.body.releaseDate)
     })
 
-    let posterUrl
-    if (req.file) {
-      posterUrl = await uploadToS3(req.file, `movies/${req.userId}`)
-    }
-
     const movie = await prisma.movie.create({
       data: {
         ...movieData,
-        posterUrl,
+
         userId: req.userId
       }
     })
@@ -86,16 +81,10 @@ export const updateMovie: RequestHandler = async (req, res): Promise<void> => {
       releaseDate: new Date(req.body.releaseDate)
     })
 
-    let posterUrl = existingMovie.posterUrl
-    if (req.file) {
-      posterUrl = await uploadToS3(req.file, `movies/${req.userId}`)
-    }
-
     const updatedMovie = await prisma.movie.update({
       where: { id },
       data: {
-        ...movieData,
-        posterUrl
+        ...movieData
       }
     })
 
@@ -103,6 +92,54 @@ export const updateMovie: RequestHandler = async (req, res): Promise<void> => {
     if (new Date(releaseDate) > new Date()) {
       await scheduleEmailReminder(updatedMovie.id, req.userId)
     }
+
+    res.json(updatedMovie)
+  } catch (error) {
+    console.error(error)
+    if (error instanceof z.ZodError) {
+      res.status(400).json({
+        error: "Falha na validação",
+        details: error.errors
+      })
+    }
+    res.status(500).json({ error: "Falha ao atualizar o filme" })
+  }
+}
+
+export const imageMovie: RequestHandler = async (req, res): Promise<void> => {
+  console.log("ta entando aqui?")
+  try {
+    if (!req.userId) {
+      res.status(401).json({ error: "Não autorizado" })
+      return
+    }
+
+    const { id } = req.params
+
+    const existingMovie = await prisma.movie.findFirst({
+      where: {
+        id,
+        userId: req.userId
+      }
+    })
+
+    if (!existingMovie) {
+      res.status(404).json({ error: "Filme não encontrado" })
+      return
+    }
+
+    let posterUrl = existingMovie.posterUrl
+    if (req.file) {
+      posterUrl = await uploadToS3(req.file, `movies/${id}`)
+    }
+
+    const updatedMovie = await prisma.movie.update({
+      where: { id },
+      data: {
+        ...existingMovie,
+        posterUrl
+      }
+    })
 
     res.json(updatedMovie)
   } catch (error) {
@@ -160,7 +197,10 @@ export const getMovies = async (req: Request, res: Response) => {
 
     // Pagination and filtering
     const page = parseInt(req.query.page as string) || 1
-    let limit = parseInt(req.query.limit, 10) || 10 // 10 items per page as specified in requirements
+    let limit = 10
+    if (req.query.limi && typeof req.query.limit === "string") {
+      limit = parseInt(req.query.limit, 10)
+    }
     const offset = (page - 1) * limit
 
     // Search and filter parameters

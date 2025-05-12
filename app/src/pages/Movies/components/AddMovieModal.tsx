@@ -7,9 +7,12 @@ import AnimatedAlert from "@/components/Alert/AnimatedAlert"
 import { useTheme } from "@/hooks/useTheme"
 import { z } from "zod"
 import createMoveis from "@/services/movies/createMoveis"
-// Definir o schema de validação com Zod
+import imageMoveis from "@/services/movies/imageMoveis"
+
+// Schema de validação com Zod - modificada para permitir arquivo ou URL
 const movieSchema = z.object({
-  posterUrl: z.string().min(1, "URL do poster é obrigatória"),
+  // posterUrl é opcional se tiver um arquivo de poster
+  posterUrl: z.string().optional(),
   title: z.string().min(1, "Título é obrigatório"),
   releaseDate: z.string().min(1, "Data de lançamento é obrigatória"),
   originalTitle: z.string().min(1, "Título original é obrigatório"),
@@ -65,6 +68,12 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({
     duration: 50
   })
 
+  // Estado para armazenar o arquivo de poster selecionado
+  const [posterFile, setPosterFile] = useState<File | null>(null)
+
+  // Estado para visualizar a prévia da imagem selecionada
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
   const [genreInput, setGenreInput] = useState<string>("")
 
   const handleAddGenre = () => {
@@ -92,8 +101,69 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({
     })
   }
 
+  // Manipula a seleção de arquivo para o poster
+  const handlePosterFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null
+
+    // Atualiza o estado com o arquivo selecionado
+    setPosterFile(file)
+
+    // Limpa os erros de validação para o poster
+    if (formErrors.posterUrl) {
+      setFormErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors.posterUrl
+        return newErrors
+      })
+    }
+
+    // Cria uma URL para pré-visualização da imagem
+    if (file) {
+      const fileUrl = URL.createObjectURL(file)
+      setPreviewUrl(fileUrl)
+
+      // Limpa a posterUrl já que estamos usando um arquivo
+      setFormData(prev => ({ ...prev, posterUrl: "" }))
+    }
+  }
+
+  // Opção para inserir URL manualmente ao invés de fazer upload
+  const handlePosterUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value
+    setFormData({ ...formData, posterUrl: url })
+
+    // Limpa o arquivo e a prévia se uma URL for inserida
+    if (url) {
+      setPosterFile(null)
+      setPreviewUrl(null)
+    }
+
+    // Limpa os erros de validação para o poster
+    if (formErrors.posterUrl) {
+      setFormErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors.posterUrl
+        return newErrors
+      })
+    }
+  }
+
   const validateForm = (): boolean => {
     try {
+      // Verificar se há pelo menos um método de poster (URL ou arquivo)
+      if (!formData.posterUrl && !posterFile) {
+        setFormErrors(prev => ({
+          ...prev,
+          posterUrl: "Forneça uma URL de poster ou faça upload de uma imagem"
+        }))
+        setAlert({
+          message: "Por favor, forneça uma imagem para o poster",
+          type: "error"
+        })
+        return false
+      }
+
+      // Validação com Zod
       movieSchema.parse(formData)
       setFormErrors({})
       return true
@@ -119,11 +189,18 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({
       if (!validateForm()) {
         return
       }
-      await createMoveis(formData)
+
+      // Chama o serviço passando tanto os dados do formulário quanto o arquivo
+      const res = await createMoveis(formData)
+      await imageMoveis(res.id, posterFile)
+
+      // Notifica o componente pai
       onSaveMovie(formData)
 
+      // Fecha o modal
       onClose()
 
+      // Reseta o formulário para valores iniciais
       setFormData({
         posterUrl: "",
         title: "",
@@ -134,6 +211,8 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({
         genres: [],
         duration: 50
       })
+      setPosterFile(null)
+      setPreviewUrl(null)
     } catch (err: any) {
       setAlert({
         message: err.message || "Erro inesperado. Tente novamente mais tarde.",
@@ -298,23 +377,44 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({
           size="1.5rem"
           color={theme === "light" ? "var(--black)" : "var(--white)"}
         >
-          URL do Poster *
+          Poster do Filme *
         </Typography>
+
+        {/* Área de upload de arquivo */}
+        <S.PosterUploadContainer>
+          <S.FileInputLabel theme={theme}>
+            <Input
+              id="posterFile"
+              type="file"
+              accept="image/*"
+              onChange={handlePosterFileChange}
+              style={{ display: "none" }}
+            />
+            <S.UploadButton theme={theme}>Selecionar arquivo</S.UploadButton>
+            <span>
+              {posterFile ? posterFile.name : "Nenhum arquivo selecionado"}
+            </span>
+          </S.FileInputLabel>
+        </S.PosterUploadContainer>
+
+        {/* Pré-visualização da imagem */}
+        {previewUrl && (
+          <S.PosterPreview>
+            <img src={previewUrl} alt="Prévia do poster" />
+          </S.PosterPreview>
+        )}
+
+        {/* OU divisor */}
+        <S.OrDivider>
+          <span>OU</span>
+        </S.OrDivider>
+
+        {/* Campo para URL externa */}
         <Input
           id="posterUrl"
-          placeholder="URL do poster"
+          placeholder="URL do poster (alternativa ao upload)"
           value={formData.posterUrl}
-          onChange={e => {
-            setFormData({ ...formData, posterUrl: e.target.value })
-            if (formErrors.posterUrl) {
-              setFormErrors(prev => {
-                const newErrors = { ...prev }
-                delete newErrors.posterUrl
-                return newErrors
-              })
-            }
-          }}
-          required
+          onChange={handlePosterUrlChange}
           backgroundcolor={theme === "light" ? "var(--white)" : "#1a191c"}
           placeholdercolor="#6f6d78"
           style={{
@@ -328,6 +428,7 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({
             ...getFieldErrorStyle("posterUrl")
           }}
         />
+
         {formErrors.posterUrl && (
           <S.ErrorMessage>{formErrors.posterUrl}</S.ErrorMessage>
         )}

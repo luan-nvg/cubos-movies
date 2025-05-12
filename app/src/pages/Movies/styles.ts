@@ -338,3 +338,72 @@ export const ErrorMessage = styled.div`
   font-size: 0.875rem;
   margin-top: 0.25rem;
 `
+
+// Add these styles to your S.js styles file
+
+export const PosterUploadContainer = styled.div`
+  width: 100%;
+  margin-bottom: 1rem;
+`
+
+export const FileInputLabel = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+
+  span {
+    color: ${props => (props.theme === "light" ? "#666" : "#aaa")};
+    font-size: 0.875rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+`
+
+export const UploadButton = styled.div`
+  padding: 0.5rem 1rem;
+  background-color: var(--primary);
+  color: #ffffff;
+  border-radius: 5px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: var(--primary-hover);
+  }
+`
+
+export const PosterPreview = styled.div`
+  width: 100%;
+  margin: 1rem 0;
+  border-radius: 5px;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    max-height: 250px;
+    object-fit: contain;
+  }
+`
+
+export const OrDivider = styled.div`
+  display: flex;
+  align-items: center;
+  margin: 1rem 0;
+  color: #6f6d78;
+
+  &:before,
+  &:after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #6f6d78;
+  }
+
+  span {
+    margin: 0 10px;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+  }
+`
