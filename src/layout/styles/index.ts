@@ -8,7 +8,9 @@ export const Page = styled.main`
 
 export const PageContainer = styled.main`
   padding: 1rem 3rem;
-  background-color: var(--bg-default);
+
+  background-color: ${props =>
+    props.theme === "light" ? "var(--white)" : "var(--black)"};
   width: 100%;
   justify-items: left;
   overflow-x: auto;
@@ -23,7 +25,8 @@ export const PageContent = styled.main`
   gap: 1.6rem;
   width: 100%;
   align-items: start;
-  background-color: var(--bg-default);
+  background-color: ${props =>
+    props.theme === "light" ? "var(--white)" : "var(--black)"};
 
   .page-content {
     margin-top: 10rem;
@@ -108,7 +111,8 @@ export const PageContent = styled.main`
 export const Footer = styled.footer`
   width: 100%;
   text-align: center;
-  color: var(--disabled);
+  color: ${props =>
+    props.theme === "light" ? "var(--black)" : "var(--white)"};
   opacity: 0.7;
   font-size: 1.6rem;
   padding: 0 0 2.4rem;

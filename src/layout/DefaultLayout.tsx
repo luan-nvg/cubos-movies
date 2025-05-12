@@ -15,7 +15,9 @@ function DefaultLayout() {
             <Outlet />
           </div>
         </PageContainer>
-        <Footer>2025 © Todos os direitos reservados a Cubos Movies</Footer>
+        <Footer theme={theme}>
+          2025 © Todos os direitos reservados a Cubos Movies
+        </Footer>
       </PageContent>
     </Page>
   )
