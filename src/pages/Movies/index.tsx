@@ -167,6 +167,7 @@ const Movies = () => {
       {isModalVisible && (
         <>
           <Modal
+            // variant="slide-right"
             textbuttonSave="Aplicar Filtros"
             title={intl.formatMessage({ id: "general.report" })}
             onClose={() => setIsModalVisible(false)}

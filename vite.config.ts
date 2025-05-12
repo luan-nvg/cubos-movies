@@ -19,7 +19,6 @@ export default defineConfig({
   },
   server: {
     host: "0.0.0.0",
-    port: 5173,
-    allowedHosts: ["redgtech.cloud"]
+    port: 5173
   }
 })
