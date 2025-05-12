@@ -6,34 +6,35 @@ import { z } from "zod"
 
 const prisma = new PrismaClient()
 
-// Validation schemas
+// Esquemas de validação
 const registerSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters")
+  name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
+  email: z.string().email("Endereço de e-mail inválido"),
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres")
 })
 
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(1, "Password is required")
+  email: z.string().email("Endereço de e-mail inválido"),
+  password: z.string().min(1, "A senha é obrigatória")
 })
 
 export const register = async (req: Request, res: Response) => {
   try {
-    // Validate input
+    // Validar entrada
     const { name, email, password } = registerSchema.parse(req.body)
 
-    // Check if user already exists
+    // Verificar se o usuário já existe
     const existingUser = await prisma.user.findUnique({ where: { email } })
     if (existingUser) {
-      return res.status(400).json({ error: "User already exists" })
+      res.status(400).json({ error: "Usuário já cadastrado" })
+      return
     }
 
-    // Hash password
+    // Criptografar senha
     const salt = await bcrypt.genSalt(10)
     const hashedPassword = await bcrypt.hash(password, salt)
 
-    // Create user
+    // Criar usuário
     const user = await prisma.user.create({
       data: {
         name,
@@ -42,15 +43,15 @@ export const register = async (req: Request, res: Response) => {
       }
     })
 
-    // Generate token
+    // Gerar token
     const secret = process.env.JWT_SECRET
     if (!secret) {
-      throw new Error("JWT_SECRET is not defined")
+      throw new Error("A variável de ambiente JWT_SECRET não está definida")
     }
 
     const token = jwt.sign({ userId: user.id }, secret, { expiresIn: "7d" })
 
-    // Return user info and token
+    // Retornar informações do usuário e token
     res.status(201).json({
       id: user.id,
       name: user.name,
@@ -59,42 +60,45 @@ export const register = async (req: Request, res: Response) => {
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({
-        error: "Validation failed",
-        details: error.errors
+      res.status(400).json({
+        error: "Falha na validação dos dados",
+        detalhes: error.errors
       })
+      return
     }
     console.error(error)
-    res.status(500).json({ error: "Registration failed" })
+    res.status(500).json({ error: "Falha ao realizar o cadastro" })
   }
 }
 
 export const login = async (req: Request, res: Response) => {
   try {
-    // Validate input
+    // Validar entrada
     const { email, password } = loginSchema.parse(req.body)
 
-    // Find user
+    // Buscar usuário
     const user = await prisma.user.findUnique({ where: { email } })
     if (!user) {
-      return res.status(401).json({ error: "Invalid credentials" })
+      res.status(401).json({ error: "Credenciais inválidas" })
+      return
     }
 
-    // Check password
+    // Verificar senha
     const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) {
-      return res.status(401).json({ error: "Invalid credentials" })
+      res.status(401).json({ error: "Credenciais inválidas" })
+      return
     }
 
-    // Generate token
+    // Gerar token
     const secret = process.env.JWT_SECRET
     if (!secret) {
-      throw new Error("JWT_SECRET is not defined")
+      throw new Error("A variável de ambiente JWT_SECRET não está definida")
     }
 
     const token = jwt.sign({ userId: user.id }, secret, { expiresIn: "7d" })
 
-    // Return user info and token
+    // Retornar informações do usuário e token
     res.json({
       id: user.id,
       name: user.name,
@@ -103,12 +107,13 @@ export const login = async (req: Request, res: Response) => {
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({
-        error: "Validation failed",
-        details: error.errors
+      res.status(400).json({
+        error: "Falha na validação dos dados",
+        detalhes: error.errors
       })
+      return
     }
     console.error(error)
-    res.status(500).json({ error: "Login failed" })
+    res.status(500).json({ error: "Falha ao realizar o login" })
   }
 }

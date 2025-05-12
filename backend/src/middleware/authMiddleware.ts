@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express"
+import { RequestHandler } from "express"
 import jwt from "jsonwebtoken"
 
 interface TokenPayload {
@@ -12,43 +12,39 @@ declare global {
     }
   }
 }
-
-export const authMiddleware = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const authMiddleware: RequestHandler = (req, res, next) => {
   const authHeader = req.headers.authorization
 
   if (!authHeader) {
-    return res.status(401).json({ error: "No token provided" })
+    res.status(401).json({ error: "No token provided" })
+    return
   }
 
   const parts = authHeader.split(" ")
 
   if (parts.length !== 2) {
-    return res.status(401).json({ error: "Token error" })
+    res.status(401).json({ error: "Token error" })
+    return
   }
 
   const [scheme, token] = parts
 
   if (!/^Bearer$/i.test(scheme)) {
-    return res.status(401).json({ error: "Token malformatted" })
+    res.status(401).json({ error: "Token malformatted" })
+    return
   }
 
   try {
     const secret = process.env.JWT_SECRET
-
     if (!secret) {
       throw new Error("JWT_SECRET is not defined")
     }
 
-    const decoded = jwt.verify(token, secret) as TokenPayload
-
+    const decoded = jwt.verify(token, secret) as { userId: string }
     req.userId = decoded.userId
 
-    return next()
+    next()
   } catch (err) {
-    return res.status(401).json({ error: "Invalid token" })
+    res.status(401).json({ error: "Invalid token" })
   }
 }
