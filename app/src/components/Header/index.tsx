@@ -1,5 +1,4 @@
 import * as S from "./styles"
-import { useTitle } from "@/contexts/TitleContext" // Importa o contexto
 import { Divider } from "@/components/Divider" // Importa o Divider
 import { Button } from "@/components/Button"
 import ThemeToggle from "@/components/ThemeToggle"
@@ -10,7 +9,6 @@ import { useAuth } from "@/contexts/AuthContext" // Importe o contexto de autent
 import Logo from "@/components/Logo" // Importa o Divider
 
 export function Header() {
-  const { title } = useTitle() // Obtém o título do contexto
   const { theme } = useTheme()
   const { isAuthenticated } = useAuth() // Obtém o estado de autenticação
 

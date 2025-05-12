@@ -160,7 +160,7 @@ export const getMovies = async (req: Request, res: Response) => {
 
     // Pagination and filtering
     const page = parseInt(req.query.page as string) || 1
-    const limit = 10 // 10 items per page as specified in requirements
+    let limit = parseInt(req.query.limit, 10) || 10 // 10 items per page as specified in requirements
     const offset = (page - 1) * limit
 
     // Search and filter parameters

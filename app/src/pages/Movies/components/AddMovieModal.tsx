@@ -1,0 +1,521 @@
+import { useState } from "react"
+import { Typography } from "@/components/Shared"
+import { Input } from "@/components/Shared"
+import * as S from "../styles"
+import Modal from "@/components/Modal"
+import AnimatedAlert from "@/components/Alert/AnimatedAlert"
+import { useTheme } from "@/hooks/useTheme"
+import { z } from "zod"
+import createMoveis from "@/services/movies/createMoveis"
+// Definir o schema de validação com Zod
+const movieSchema = z.object({
+  posterUrl: z.string().min(1, "URL do poster é obrigatória"),
+  title: z.string().min(1, "Título é obrigatório"),
+  releaseDate: z.string().min(1, "Data de lançamento é obrigatória"),
+  originalTitle: z.string().min(1, "Título original é obrigatório"),
+  description: z.string().min(1, "Descrição é obrigatória"),
+  budget: z.number().min(1, "Orçamento deve ser maior que zero"),
+  genres: z.array(z.string()).min(1, "Adicione pelo menos um gênero"),
+  duration: z.number().min(1, "Duração deve ser maior que zero")
+})
+
+type MovieSchema = z.infer<typeof movieSchema>
+
+interface AddMovieModalProps {
+  isVisible: boolean
+  onClose: () => void
+  onSaveMovie: (movieData: MovieFormData) => void
+}
+
+export interface MovieFormData {
+  posterUrl: string
+  title: string
+  releaseDate: string
+  originalTitle: string
+  description: string
+  budget: number
+  genres: string[]
+  duration: number
+}
+
+const AddMovieModal: React.FC<AddMovieModalProps> = ({
+  isVisible,
+  onClose,
+  onSaveMovie
+}) => {
+  const { theme } = useTheme()
+
+  const [alert, setAlert] = useState<{
+    message: string
+    type: "success" | "error" | "warning"
+  } | null>(null)
+
+  const [formErrors, setFormErrors] = useState<{
+    [key: string]: string
+  }>({})
+
+  const [formData, setFormData] = useState<MovieFormData>({
+    posterUrl: "",
+    title: "",
+    releaseDate: new Date().toISOString().slice(0, 10),
+    originalTitle: "",
+    description: "",
+    budget: 100,
+    genres: [],
+    duration: 50
+  })
+
+  const [genreInput, setGenreInput] = useState<string>("")
+
+  const handleAddGenre = () => {
+    if (genreInput && !formData.genres?.includes(genreInput)) {
+      setFormData({
+        ...formData,
+        genres: [...(formData.genres || []), genreInput]
+      })
+      setGenreInput("")
+      // Limpar erro dos gêneros se existir
+      if (formErrors.genres) {
+        setFormErrors(prev => {
+          const newErrors = { ...prev }
+          delete newErrors.genres
+          return newErrors
+        })
+      }
+    }
+  }
+
+  const handleRemoveGenre = (genre: string) => {
+    setFormData({
+      ...formData,
+      genres: formData.genres?.filter(g => g !== genre)
+    })
+  }
+
+  const validateForm = (): boolean => {
+    try {
+      movieSchema.parse(formData)
+      setFormErrors({})
+      return true
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errors: { [key: string]: string } = {}
+        error.errors.forEach(err => {
+          const field = err.path[0] as string
+          errors[field] = err.message
+        })
+        setFormErrors(errors)
+        setAlert({
+          message: "Por favor, corrija os erros no formulário",
+          type: "error"
+        })
+      }
+      return false
+    }
+  }
+
+  const handleSubmitMovie = async () => {
+    try {
+      if (!validateForm()) {
+        return
+      }
+      await createMoveis(formData)
+      onSaveMovie(formData)
+
+      onClose()
+
+      setFormData({
+        posterUrl: "",
+        title: "",
+        releaseDate: new Date().toISOString().slice(0, 10),
+        originalTitle: "",
+        description: "",
+        budget: 100,
+        genres: [],
+        duration: 50
+      })
+    } catch (err: any) {
+      setAlert({
+        message: err.message || "Erro inesperado. Tente novamente mais tarde.",
+        type: "error"
+      })
+    }
+  }
+
+  const getFieldErrorStyle = (fieldName: string) => {
+    return formErrors[fieldName]
+      ? {
+          borderColor: "var(--error)",
+          borderWidth: "2px"
+        }
+      : {}
+  }
+
+  if (!isVisible) return null
+
+  return (
+    <Modal
+      variant="slide-right"
+      textbuttonSave="Salvar Filme"
+      title="Adicionar Novo Filme"
+      onClose={onClose}
+      onSave={handleSubmitMovie}
+    >
+      {alert && (
+        <AnimatedAlert
+          message={alert.message}
+          type={alert.type}
+          onClose={() => setAlert(null)}
+        />
+      )}
+
+      <S.FieldWrapper>
+        <Typography
+          as="h1"
+          size="1.5rem"
+          color={theme === "light" ? "var(--black)" : "var(--white)"}
+        >
+          Título do Filme *
+        </Typography>
+        <Input
+          id="title"
+          placeholder="Título do filme"
+          value={formData.title}
+          onChange={e => {
+            setFormData({ ...formData, title: e.target.value })
+            if (formErrors.title) {
+              setFormErrors(prev => {
+                const newErrors = { ...prev }
+                delete newErrors.title
+                return newErrors
+              })
+            }
+          }}
+          required
+          backgroundcolor={theme === "light" ? "var(--white)" : "#1a191c"}
+          placeholdercolor="#6f6d78"
+          style={{
+            border: "2px solid",
+            borderColor: formErrors.title
+              ? "var(--error)"
+              : theme === "light"
+              ? "var(--black)"
+              : "#232225",
+            color: theme === "light" ? "var(--black)" : "var(--white)",
+            ...getFieldErrorStyle("title")
+          }}
+        />
+        {formErrors.title && (
+          <S.ErrorMessage>{formErrors.title}</S.ErrorMessage>
+        )}
+      </S.FieldWrapper>
+
+      <S.FieldWrapper>
+        <Typography
+          as="h1"
+          size="1.5rem"
+          color={theme === "light" ? "var(--black)" : "var(--white)"}
+        >
+          Título Original *
+        </Typography>
+        <Input
+          id="originalTitle"
+          placeholder="Título original"
+          value={formData.originalTitle || ""}
+          onChange={e => {
+            setFormData({ ...formData, originalTitle: e.target.value })
+            if (formErrors.originalTitle) {
+              setFormErrors(prev => {
+                const newErrors = { ...prev }
+                delete newErrors.originalTitle
+                return newErrors
+              })
+            }
+          }}
+          required
+          backgroundcolor={theme === "light" ? "var(--white)" : "#1a191c"}
+          placeholdercolor="#6f6d78"
+          style={{
+            border: "2px solid",
+            borderColor: formErrors.originalTitle
+              ? "var(--error)"
+              : theme === "light"
+              ? "var(--black)"
+              : "#232225",
+            color: theme === "light" ? "var(--black)" : "var(--white)",
+            ...getFieldErrorStyle("originalTitle")
+          }}
+        />
+        {formErrors.originalTitle && (
+          <S.ErrorMessage>{formErrors.originalTitle}</S.ErrorMessage>
+        )}
+      </S.FieldWrapper>
+
+      <S.FieldWrapper>
+        <Typography
+          as="h1"
+          size="1.5rem"
+          color={theme === "light" ? "var(--black)" : "var(--white)"}
+        >
+          Data de Lançamento *
+        </Typography>
+        <Input
+          id="releaseDate"
+          type="date"
+          value={formData.releaseDate}
+          onChange={e => {
+            setFormData({ ...formData, releaseDate: e.target.value })
+            if (formErrors.releaseDate) {
+              setFormErrors(prev => {
+                const newErrors = { ...prev }
+                delete newErrors.releaseDate
+                return newErrors
+              })
+            }
+          }}
+          required
+          backgroundcolor={theme === "light" ? "var(--white)" : "#1a191c"}
+          placeholdercolor="#6f6d78"
+          style={{
+            border: "2px solid",
+            borderColor: formErrors.releaseDate
+              ? "var(--error)"
+              : theme === "light"
+              ? "var(--black)"
+              : "#232225",
+            color: theme === "light" ? "var(--black)" : "var(--white)",
+            ...getFieldErrorStyle("releaseDate")
+          }}
+        />
+        {formErrors.releaseDate && (
+          <S.ErrorMessage>{formErrors.releaseDate}</S.ErrorMessage>
+        )}
+      </S.FieldWrapper>
+
+      <S.FieldWrapper>
+        <Typography
+          as="h1"
+          size="1.5rem"
+          color={theme === "light" ? "var(--black)" : "var(--white)"}
+        >
+          URL do Poster *
+        </Typography>
+        <Input
+          id="posterUrl"
+          placeholder="URL do poster"
+          value={formData.posterUrl}
+          onChange={e => {
+            setFormData({ ...formData, posterUrl: e.target.value })
+            if (formErrors.posterUrl) {
+              setFormErrors(prev => {
+                const newErrors = { ...prev }
+                delete newErrors.posterUrl
+                return newErrors
+              })
+            }
+          }}
+          required
+          backgroundcolor={theme === "light" ? "var(--white)" : "#1a191c"}
+          placeholdercolor="#6f6d78"
+          style={{
+            border: "2px solid",
+            borderColor: formErrors.posterUrl
+              ? "var(--error)"
+              : theme === "light"
+              ? "var(--black)"
+              : "#232225",
+            color: theme === "light" ? "var(--black)" : "var(--white)",
+            ...getFieldErrorStyle("posterUrl")
+          }}
+        />
+        {formErrors.posterUrl && (
+          <S.ErrorMessage>{formErrors.posterUrl}</S.ErrorMessage>
+        )}
+      </S.FieldWrapper>
+
+      <S.FieldWrapper>
+        <Typography
+          as="h1"
+          size="1.5rem"
+          color={theme === "light" ? "var(--black)" : "var(--white)"}
+        >
+          Descrição *
+        </Typography>
+        <S.TextArea
+          id="description"
+          placeholder="Descrição do filme"
+          value={formData.description || ""}
+          onChange={e => {
+            setFormData({ ...formData, description: e.target.value })
+            if (formErrors.description) {
+              setFormErrors(prev => {
+                const newErrors = { ...prev }
+                delete newErrors.description
+                return newErrors
+              })
+            }
+          }}
+          required
+          rows={4}
+          style={{
+            backgroundColor: theme === "light" ? "var(--white)" : "#1a191c",
+            border: "2px solid",
+            borderColor: formErrors.description
+              ? "var(--error)"
+              : theme === "light"
+              ? "var(--black)"
+              : "#232225",
+            color: theme === "light" ? "var(--black)" : "var(--white)",
+            ...getFieldErrorStyle("description")
+          }}
+        />
+        {formErrors.description && (
+          <S.ErrorMessage>{formErrors.description}</S.ErrorMessage>
+        )}
+      </S.FieldWrapper>
+
+      <S.FormRow>
+        <S.FieldWrapper>
+          <Typography
+            as="h1"
+            size="1.5rem"
+            color={theme === "light" ? "var(--black)" : "var(--white)"}
+          >
+            Orçamento *
+          </Typography>
+          <Input
+            id="budget"
+            type="number"
+            placeholder="Orçamento"
+            value={formData.budget || ""}
+            onChange={e => {
+              setFormData({
+                ...formData,
+                budget: Number(e.target.value) || 0
+              })
+              if (formErrors.budget) {
+                setFormErrors(prev => {
+                  const newErrors = { ...prev }
+                  delete newErrors.budget
+                  return newErrors
+                })
+              }
+            }}
+            required
+            backgroundcolor={theme === "light" ? "var(--white)" : "#1a191c"}
+            placeholdercolor="#6f6d78"
+            style={{
+              border: "2px solid",
+              borderColor: formErrors.budget
+                ? "var(--error)"
+                : theme === "light"
+                ? "var(--black)"
+                : "#232225",
+              color: theme === "light" ? "var(--black)" : "var(--white)",
+              ...getFieldErrorStyle("budget")
+            }}
+          />
+          {formErrors.budget && (
+            <S.ErrorMessage>{formErrors.budget}</S.ErrorMessage>
+          )}
+        </S.FieldWrapper>
+
+        <S.FieldWrapper>
+          <Typography
+            as="h1"
+            size="1.5rem"
+            color={theme === "light" ? "var(--black)" : "var(--white)"}
+          >
+            Duração (min) *
+          </Typography>
+          <Input
+            id="duration"
+            type="number"
+            placeholder="Duração em minutos"
+            value={formData.duration || ""}
+            onChange={e => {
+              setFormData({
+                ...formData,
+                duration: Number(e.target.value) || 0
+              })
+              if (formErrors.duration) {
+                setFormErrors(prev => {
+                  const newErrors = { ...prev }
+                  delete newErrors.duration
+                  return newErrors
+                })
+              }
+            }}
+            required
+            backgroundcolor={theme === "light" ? "var(--white)" : "#1a191c"}
+            placeholdercolor="#6f6d78"
+            style={{
+              border: "2px solid",
+              borderColor: formErrors.duration
+                ? "var(--error)"
+                : theme === "light"
+                ? "var(--black)"
+                : "#232225",
+              color: theme === "light" ? "var(--black)" : "var(--white)",
+              ...getFieldErrorStyle("duration")
+            }}
+          />
+          {formErrors.duration && (
+            <S.ErrorMessage>{formErrors.duration}</S.ErrorMessage>
+          )}
+        </S.FieldWrapper>
+      </S.FormRow>
+
+      <S.FieldWrapper>
+        <Typography
+          as="h1"
+          size="1.5rem"
+          color={theme === "light" ? "var(--black)" : "var(--white)"}
+        >
+          Gêneros *
+        </Typography>
+        <S.GenreInputContainer>
+          <Input
+            id="genre"
+            placeholder="Adicionar gênero"
+            value={genreInput}
+            onChange={e => setGenreInput(e.target.value)}
+            style={{
+              borderRadius: "5px 0 0 5px",
+              backgroundColor: theme === "light" ? "var(--white)" : "#1a191c",
+              border: "2px solid",
+              borderColor: formErrors.genres
+                ? "var(--error)"
+                : theme === "light"
+                ? "var(--black)"
+                : "#232225",
+              color: theme === "light" ? "var(--black)" : "var(--white)",
+              ...getFieldErrorStyle("genres")
+            }}
+            backgroundcolor={theme === "light" ? "var(--white)" : "#1a191c"}
+            placeholdercolor="#6f6d78"
+          />
+          <S.AddGenreButton type="button" onClick={handleAddGenre}>
+            +
+          </S.AddGenreButton>
+        </S.GenreInputContainer>
+
+        <S.GenresList>
+          {formData.genres?.map((genre, index) => (
+            <S.GenreTag key={index} theme={theme}>
+              {genre}
+              <S.RemoveGenreButton onClick={() => handleRemoveGenre(genre)}>
+                ×
+              </S.RemoveGenreButton>
+            </S.GenreTag>
+          ))}
+        </S.GenresList>
+        {formErrors.genres && (
+          <S.ErrorMessage>{formErrors.genres}</S.ErrorMessage>
+        )}
+      </S.FieldWrapper>
+    </Modal>
+  )
+}
+
+export default AddMovieModal

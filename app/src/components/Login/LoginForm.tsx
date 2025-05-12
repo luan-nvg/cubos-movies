@@ -63,7 +63,7 @@ export function LoginForm() {
     } catch (error) {
       console.error(error)
       if (axios.isAxiosError(error) && error.response?.data) {
-        setAlert({ message: error.response.data.message, type: "error" })
+        setAlert({ message: error.response.data.error, type: "error" })
       } else {
         setAlert({
           message: "Erro inesperado. Tente novamente mais tarde.",

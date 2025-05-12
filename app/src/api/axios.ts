@@ -1,7 +1,7 @@
 import axios from "axios"
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL
+  baseURL: import.meta.env.VITE_BACKEND_DOMAIN
   // withCredentials: true
 })
 
@@ -10,7 +10,7 @@ api.interceptors.request.use(
   config => {
     const token = localStorage.getItem("access_token")
     if (token) {
-      config.headers.Authorization = `${token}`
+      config.headers.authorization = `bearer ${token}`
     }
 
     const projectId = localStorage.getItem("projectId") // ou de onde for o projectId
@@ -33,23 +33,5 @@ api.interceptors.request.use(
     return Promise.reject(error)
   }
 )
-
-// api.interceptors.response.use(
-//   response => response,
-//   error => {
-//     const isLoginPage = window.location.pathname === "/login"
-
-//     if (
-//       axios.isAxiosError(error) &&
-//       error.response?.status === 401 &&
-//       !isLoginPage
-//     ) {
-//       console.log("Sem permissão! Redirecionando para login.")
-//       window.location.href = "/login"
-//     }
-
-//     return Promise.reject(error)
-//   }
-// )
 
 export default api

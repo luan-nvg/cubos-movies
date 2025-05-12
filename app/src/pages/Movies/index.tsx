@@ -1,73 +1,47 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import * as S from "./styles"
-import onAllProjects from "@/services/Boards/AllBoardsControl"
+import getMoveis from "@/services/movies/getMoveis"
 import { useIntl } from "react-intl"
 import MoviesGrid from "@/components/MoviesGrid"
-import TablePagination from "@/components/TablePagination" // Import the new component
+import TablePagination from "@/components/TablePagination"
 import { useTitle } from "@/contexts/TitleContext"
-import { TableDataItem, IBoard } from "./interface" // Adicione o import do tipo TableColumn
-import Modal from "@/components/Modal"
-import moment from "moment"
-import { Input } from "@/components/Shared"
-// Get Current Date - 7
-function generateInitialDate() {
-  const today = new Date()
-  const initialDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
-  return initialDate.toISOString().slice(0, 16)
-}
-// Get Current Date
-function currentISODateFormatted() {
-  return new Date().toISOString().slice(0, 16)
-}
-
-// Format date for API calls
-function formatDate(date: moment.MomentInput) {
-  return moment(date).format("YYYY-MM-DD HH:mm:ss")
-}
+import { TableDataItem, IBoard } from "./interface"
+import FilterModal, { FilterFormData } from "./components/FilterModal"
+import AddMovieModal, { MovieFormData } from "./components/AddMovieModal"
 
 const Movies = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const [currentPage, setCurrentPage] = useState(1)
-  const [currentBoards, setCurrentBoards] = useState<IBoard[]>([])
+  const [currentMovies, setCurrentMovies] = useState<IBoard[]>([])
   const [totalPages, setTotalPages] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
   const [itemsOnPage, setItemsOnPage] = useState(0)
   const { setTitle } = useTitle()
   const navigate = useNavigate()
-  const [isModalVisible, setIsModalVisible] = useState(false)
   const intl = useIntl()
-  const [alert, setAlert] = useState<{
-    message: string
-    type: "success" | "error" | "warning"
-  } | null>(null)
 
-  const [formData, setFormData] = useState({
-    initialDate: generateInitialDate(),
-    finalDate: currentISODateFormatted(),
-    title: ""
-  })
+  // Filter modal state
+  const [isFilterModalVisible, setIsFilterModalVisible] = useState(false)
 
-  const handleSubmitReport = () => {
-    const { title, initialDate, finalDate } = formData
-    console.log(title, initialDate, finalDate)
-  }
+  // Add movie modal state
+  const [isAddMovieModalVisible, setIsAddMovieModalVisible] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Pass current page to API call
-        const response = await onAllProjects(currentPage, itemsPerPage)
+        const response = await getMoveis(currentPage, itemsPerPage)
 
         // Get projects array and totalCount from response
-        let boards = []
+        let movies = []
         let totalCount = 0
 
-        if (response && response.entities && Array.isArray(response.entities)) {
-          boards = response.entities
-          totalCount = response?.totalCount || boards.length
+        if (response && response.movies && Array.isArray(response.movies)) {
+          movies = response.movies
+          totalCount = response?.totalCount || movies.length
         } else if (Array.isArray(response)) {
-          boards = response
+          movies = response
           totalCount = response.length
         }
 
@@ -75,16 +49,16 @@ const Movies = () => {
         const total = Math.max(1, Math.ceil(totalCount / itemsPerPage))
         setTotalPages(total)
         setTotalItems(totalCount)
-        setCurrentBoards(boards)
-        setItemsOnPage(boards.length)
+        setCurrentMovies(movies)
+        setItemsOnPage(movies.length)
 
         console.log(
-          `Page ${currentPage}: showing ${boards.length} of ${totalCount} items, total pages: ${total}`
+          `Page ${currentPage}: showing ${movies.length} of ${totalCount} items, total pages: ${total}`
         )
       } catch (error) {
-        console.error("Error fetching boards:", error)
+        console.error("Error fetching movies:", error)
         setTotalPages(1)
-        setCurrentBoards([])
+        setCurrentMovies([])
         setItemsOnPage(0)
         setTotalItems(0)
       }
@@ -104,7 +78,32 @@ const Movies = () => {
     setCurrentPage(1) // Reset to first page when changing items per page
   }
 
-  const tableData: TableDataItem[] = currentBoards
+  const handleApplyFilters = (filters: FilterFormData) => {
+    console.log("Applying filters:", filters)
+    // Implement your filter logic here
+    // You might want to call an API with these filters
+  }
+
+  const handleSaveMovie = async (movieData: MovieFormData) => {
+    try {
+      console.log("Saving movie:", movieData)
+      // Implement your save movie API call here
+      // Example: await createMovie(movieData);
+
+      // Refresh movie list after save
+      const response = await getMoveis(currentPage, itemsPerPage)
+      console.log("All movie:", movieData, response)
+      if (response && response.movies && Array.isArray(response.movies)) {
+        setCurrentMovies(response.movies)
+        setTotalItems(response?.totalCount || response.movies.length)
+      }
+    } catch (error) {
+      console.error("Error saving movie:", error)
+      // Handle errors appropriately
+    }
+  }
+
+  const tableData: TableDataItem[] = currentMovies
     .filter(project => project.id !== undefined) // garante que o id existe
     .map(project => ({
       title: project.name,
@@ -120,7 +119,7 @@ const Movies = () => {
     }))
 
   useEffect(() => {
-    setTitle("Placas")
+    setTitle("Filmes")
   }, [setTitle])
 
   const loading = false
@@ -133,19 +132,13 @@ const Movies = () => {
             <S.SearchInput type="text" placeholder="Pesquisar por filmes" />
             <S.SearchIcon />
           </S.SearchBar>
-          <S.FiltersButton
-            onClick={() => {
-              setIsModalVisible(true)
-            }}
-          >
+          <S.FiltersButton onClick={() => setIsFilterModalVisible(true)}>
             Filtros
           </S.FiltersButton>
-          <S.FiltersButton>Adicionar Filme</S.FiltersButton>
+          <S.FiltersButton onClick={() => setIsAddMovieModalVisible(true)}>
+            Adicionar Filme
+          </S.FiltersButton>
         </S.Header>
-
-        {/* <S.SectionSubtitle>
-          <SectionTitle fontSize="var(--md)" title="Listar Placas" />
-        </S.SectionSubtitle> */}
 
         {loading ? (
           <S.LoadingContainer>Carregando filmes...</S.LoadingContainer>
@@ -164,92 +157,17 @@ const Movies = () => {
         />
       </S.Container>
 
-      {isModalVisible && (
-        <>
-          <Modal
-            // variant="slide-right"
-            textbuttonSave="Aplicar Filtros"
-            title={intl.formatMessage({ id: "general.report" })}
-            onClose={() => setIsModalVisible(false)}
-            onSave={async () => {
-              const { initialDate, finalDate } = formData
+      <FilterModal
+        isVisible={isFilterModalVisible}
+        onClose={() => setIsFilterModalVisible(false)}
+        onApplyFilters={handleApplyFilters}
+      />
 
-              try {
-                const res = await api.post("/drives/valid-rule-date", {
-                  queryParams: {
-                    start_date: formatDate(initialDate),
-                    end_date: formatDate(finalDate)
-                  }
-                })
-
-                if (res.data.success) {
-                  handleSubmitReport()
-                } else {
-                  setAlert({
-                    message: "Erro inesperado. Tente novamente mais tarde.",
-                    type: "error"
-                  })
-                }
-              } catch (err) {
-                const error = err as AxiosError<{ message: string }>
-
-                const serverMessage = error.response?.data?.message
-
-                setAlert({
-                  message:
-                    serverMessage ||
-                    "Erro inesperado. Tente novamente mais tarde.",
-                  type: "error"
-                })
-              }
-            }}
-          >
-            {alert && (
-              <S.FormGroup>
-                <AnimatedAlert
-                  message={alert.message}
-                  type={alert.type}
-                  onClose={() => setAlert(null)}
-                />
-              </S.FormGroup>
-            )}
-
-            <S.FormGroup>
-              <Input
-                id="title"
-                placeholder="nome do filme"
-                onChange={date => {
-                  setFormData({ ...formData, title: date.target.value })
-                }}
-              />
-            </S.FormGroup>
-
-            <S.FormGroup>
-              <S.DateTimePicker
-                value={formData.initialDate}
-                onChange={date => {
-                  setFormData({ ...formData, initialDate: date.target.value })
-                }}
-                label={intl.formatMessage({
-                  id: "report.startDate.placeholder"
-                })}
-              />
-            </S.FormGroup>
-
-            <S.FormGroup>
-              <S.DateTimePicker
-                value={formData.finalDate}
-                onChange={date => {
-                  setFormData({ ...formData, finalDate: date.target.value })
-                }}
-                label={intl.formatMessage({
-                  id: "report.endDate.placeholder"
-                })}
-              />
-            </S.FormGroup>
-          </Modal>
-        </>
-      )}
+      <AddMovieModal
+        isVisible={isAddMovieModalVisible}
+        onClose={() => setIsAddMovieModalVisible(false)}
+        onSaveMovie={handleSaveMovie}
+      />
     </>
   )
 }

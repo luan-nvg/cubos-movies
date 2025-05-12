@@ -1,5 +1,5 @@
-import api from "../../api/axios";
-const endpoint = "/product";
+import api from "../../api/axios"
+const endpoint = "/product"
 
 const productService = {
   getProducts: async (page: number, limit: number) => {
@@ -7,36 +7,36 @@ const productService = {
       const response = await api.get(endpoint, {
         params: {
           page,
-          limit,
-        },
-      });
-      return response.data.data;
+          limit
+        }
+      })
+      return response.data.data
     } catch (error: any) {
       return {
-        error: error.response.data.message || "Erro ao buscar produtos",
-      };
+        error: error.response.data.error || "Erro ao buscar produtos"
+      }
     }
   },
 
   registerProduct: async (productData: any) => {
     try {
-      const response = await api.post(`${endpoint}/create`, productData);
-      return response.data;
+      const response = await api.post(`${endpoint}/create`, productData)
+      return response.data
     } catch (error: any) {
       return {
-        error: error.response.data.message || "Erro ao cadastrar produto",
-      };
+        error: error.response.data.error || "Erro ao cadastrar produto"
+      }
     }
   },
 
   deleteProduct: async (productId: string) => {
     try {
-      const response = await api.delete(`${endpoint}/${productId}`);
-      return response.data;
+      const response = await api.delete(`${endpoint}/${productId}`)
+      return response.data
     } catch (error: any) {
       return {
-        error: error.response.data.message || "Erro ao deletar produto",
-      };
+        error: error.response.data.error || "Erro ao deletar produto"
+      }
     }
   },
 
@@ -44,15 +44,15 @@ const productService = {
     try {
       const response = await api.put(`${endpoint}`, {
         ...productData,
-        productId,
-      });
-      return response.data;
+        productId
+      })
+      return response.data
     } catch (error: any) {
       return {
-        error: error.response.data.message || "Erro ao atualizar categoria",
-      };
+        error: error.response.data.error || "Erro ao atualizar categoria"
+      }
     }
-  },
-};
+  }
+}
 
-export default productService;
+export default productService

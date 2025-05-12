@@ -1,5 +1,6 @@
 import React from "react"
 import * as S from "./styles"
+import { useTheme } from "../../hooks/useTheme"
 
 interface ModalProps {
   title: string
@@ -22,6 +23,8 @@ const Modal: React.FC<ModalProps> = ({
   variant = "central",
   className = ""
 }) => {
+  const { theme } = useTheme()
+
   const handleSave = () => {
     // Implementar lógica para coletar dados do formulário se necessário
     onSave({}) // Substituir com os dados coletados do formulário
@@ -32,9 +35,9 @@ const Modal: React.FC<ModalProps> = ({
       $variant={variant}
       className={`${variant}-modal ${className}`}
     >
-      <S.ModalContent $variant={variant}>
+      <S.ModalContent $variant={variant} theme={theme}>
         <S.ModalHeader>
-          <S.ModalTitle>{title}</S.ModalTitle>
+          <S.ModalTitle theme={theme}>{title}</S.ModalTitle>
           <S.CloseButton onClick={onClose}>×</S.CloseButton>
         </S.ModalHeader>
         <S.ModalBody $variant={variant}>{children}</S.ModalBody>

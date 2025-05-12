@@ -3,7 +3,7 @@ import * as S from "./styles"
 const Movies = ({ movies, ...rest }) => {
   return (
     <S.MoviesGrid {...rest}>
-      {movies.map(movie => (
+      {movies.map((movie: any) => (
         <S.MovieCard key={movie.id}>
           <S.MoviePoster>
             <S.RatingCircle>

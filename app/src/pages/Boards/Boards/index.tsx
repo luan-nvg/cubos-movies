@@ -5,7 +5,7 @@ import onAllProjects from "@/services/Boards/AllBoardsControl"
 import { IBoard } from "./interface"
 import Table from "@/components/Table"
 import { SectionTitle } from "@/components/SectionTitle"
-import { Divider } from "@/components/Divider"
+
 import TablePagination from "@/components/TablePagination" // Import the new component
 import { useProjectContext } from "@/contexts/ProjectContext"
 import { useTitle } from "@/contexts/TitleContext"

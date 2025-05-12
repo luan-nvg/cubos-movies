@@ -1,5 +1,3 @@
-import { ReactNode } from "react"
-
 interface IBoard {
   id?: string // Adicionando o ID da linha
   name: string
@@ -32,7 +30,6 @@ interface TableDataItem {
   id: string | number // dependendo de como o `id` vem do `project`
   status: string
   type: string
-  action: ReactNode
 }
 
 interface ColData {

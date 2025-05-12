@@ -94,6 +94,9 @@ export const ModalContent = styled.div<{
   overflow-y: auto;
 
   ${props => modalContentVariants[props.$variant || "central"]}
+
+  background-color: ${props =>
+    props.theme === "light" ? "var(--white)" : "var(--black)"};
 `
 
 export const ModalHeader = styled.div`
@@ -105,6 +108,8 @@ export const ModalHeader = styled.div`
 `
 
 export const ModalTitle = styled.h2`
+  color: ${props =>
+    props.theme === "light" ? "var(--black)" : "var(--white)"};
   margin: 0;
 `
 
