@@ -4,6 +4,7 @@ import dotenv from "dotenv"
 import authRoutes from "./routes/authRoutes"
 import movieRoutes from "./routes/movieRoutes"
 import { errorHandler } from "./middleware/errorHandler"
+import imageRoutes from "./routes/imageRoutes"
 
 // Load environment variables
 dotenv.config()
@@ -18,7 +19,7 @@ app.use(express.json())
 // Routes
 app.use("/auth", authRoutes)
 app.use("/movies", movieRoutes)
-
+app.use("/image", imageRoutes)
 // Global error handler
 app.use(errorHandler)
 

@@ -17,6 +17,7 @@ const Movies = () => {
   const [totalPages, setTotalPages] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
   const [itemsOnPage, setItemsOnPage] = useState(0)
+  const [loading, setLoading] = useState(false)
   const { setTitle } = useTitle()
   const navigate = useNavigate()
   const intl = useIntl()
@@ -27,102 +28,115 @@ const Movies = () => {
   // Add movie modal state
   const [isAddMovieModalVisible, setIsAddMovieModalVisible] = useState(false)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Pass current page to API call
-        const response = await getMoveis(currentPage, itemsPerPage)
+  // Função para buscar os filmes da API
+  const fetchMovies = async (page, limit) => {
+    setLoading(true)
+    try {
+      console.log(
+        `Fetching movies for page ${page} with ${limit} items per page`
+      )
+      const response = await getMoveis(page, limit)
 
-        // Get projects array and totalCount from response
-        let movies = []
-        let totalCount = 0
+      // Verificar a estrutura da resposta
+      let movies = []
+      let totalCount = 0
+      let totalPagesCount = 1
 
-        if (response && response.movies && Array.isArray(response.movies)) {
-          movies = response.movies
-          totalCount = response?.totalCount || movies.length
-        } else if (Array.isArray(response)) {
-          movies = response
-          totalCount = response.length
-        }
-
-        // Calculate total pages based on totalCount from API
-        const total = Math.max(1, Math.ceil(totalCount / itemsPerPage))
-        setTotalPages(total)
-        setTotalItems(totalCount)
-        setCurrentMovies(movies)
-        setItemsOnPage(movies.length)
-
-        console.log(
-          `Page ${currentPage}: showing ${movies.length} of ${totalCount} items, total pages: ${total}`
-        )
-      } catch (error) {
-        console.error("Error fetching movies:", error)
-        setTotalPages(1)
-        setCurrentMovies([])
-        setItemsOnPage(0)
-        setTotalItems(0)
+      if (response && response.movies && Array.isArray(response.movies)) {
+        movies = response.movies
+        totalCount = response.pagination?.total || movies.length
+        totalPagesCount =
+          response.pagination?.totalPages || Math.ceil(totalCount / limit)
+      } else if (Array.isArray(response)) {
+        movies = response
+        totalCount = response.length
+        totalPagesCount = Math.ceil(totalCount / limit)
       }
-    }
 
-    fetchData()
+      setCurrentMovies(movies)
+      setTotalItems(totalCount)
+      setTotalPages(totalPagesCount)
+      setItemsOnPage(movies.length)
+
+      console.log(
+        `Page ${page}: showing ${movies.length} of ${totalCount} items, total pages: ${totalPagesCount}`
+      )
+    } catch (error) {
+      console.error("Error fetching movies:", error)
+      setCurrentMovies([])
+      setTotalItems(0)
+      setTotalPages(1)
+      setItemsOnPage(0)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Efeito para carregar os filmes quando a página ou itens por página mudarem
+  useEffect(() => {
+    fetchMovies(currentPage, itemsPerPage)
   }, [currentPage, itemsPerPage])
 
-  const handlePageChange = (newPage: number) => {
+  // Handler para mudança de página
+  const handlePageChange = newPage => {
+    if (newPage === currentPage) return // Evitar recarregar a mesma página
+
     console.log(`Changing to page: ${newPage}`)
     setCurrentPage(newPage)
   }
 
-  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+  // Handler para mudança de itens por página
+  const handleItemsPerPageChange = newItemsPerPage => {
+    if (newItemsPerPage === itemsPerPage) return
+
     console.log(`Changing items per page to: ${newItemsPerPage}`)
     setItemsPerPage(newItemsPerPage)
     setCurrentPage(1) // Reset to first page when changing items per page
   }
 
-  const handleApplyFilters = (filters: FilterFormData) => {
+  const handleApplyFilters = filters => {
     console.log("Applying filters:", filters)
     // Implement your filter logic here
-    // You might want to call an API with these filters
+    // Você pode querer reiniciar a paginação aqui também
+    setCurrentPage(1)
+    // Adicionar lógica de filtro e chamar fetchMovies com os filtros
   }
 
-  const handleSaveMovie = async (movieData: MovieFormData) => {
+  const handleSaveMovie = async movieData => {
     try {
       console.log("Saving movie:", movieData)
       // Implement your save movie API call here
       // Example: await createMovie(movieData);
 
       // Refresh movie list after save
-      const response = await getMoveis(currentPage, itemsPerPage)
-      console.log("All movie:", movieData, response)
-      if (response && response.movies && Array.isArray(response.movies)) {
-        setCurrentMovies(response.movies)
-        setTotalItems(response?.totalCount || response.movies.length)
-      }
+      await fetchMovies(currentPage, itemsPerPage)
     } catch (error) {
       console.error("Error saving movie:", error)
       // Handle errors appropriately
     }
   }
 
-  const tableData: TableDataItem[] = currentMovies
-    .filter(project => project.id !== undefined) // garante que o id existe
-    .map(project => ({
-      title: project.name,
+  const tableData = currentMovies
+    .filter(movie => movie.id !== undefined)
+    .map(movie => ({
+      title: movie.title || movie.name, // Compatibilidade com diferentes formatos
       image:
+        movie.posterUrl ||
         "https://upload.wikimedia.org/wikipedia/pt/5/59/Captain_Marvel_%282018%29.jpg",
-      rating: 67,
-      year: 2025,
-      name: project.name,
-      id: project.id!,
-      status: project.status,
-      type: project.type,
-      genres: ["Ação", "Ficção Científica"]
+      rating: movie.rating || 0,
+      year: movie.releaseDate
+        ? new Date(movie.releaseDate).getFullYear()
+        : 2025,
+      name: movie.title || movie.name,
+      id: movie.id,
+      status: movie.status,
+      type: movie.type,
+      genres: movie.genres || []
     }))
 
   useEffect(() => {
     setTitle("Filmes")
   }, [setTitle])
-
-  const loading = false
 
   return (
     <>

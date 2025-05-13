@@ -9,10 +9,12 @@ import { z } from "zod"
 import createMoveis from "@/services/movies/createMoveis"
 import imageMoveis from "@/services/movies/imageMoveis"
 
-// Schema de validação com Zod - modificada para permitir arquivo ou URL
+// Schema de validação com Zod - modificada para permitir arquivo ou URL para poster e banner
 const movieSchema = z.object({
   // posterUrl é opcional se tiver um arquivo de poster
   posterUrl: z.string().optional(),
+  // bannerUrl é opcional se tiver um arquivo de banner
+  bannerUrl: z.string().optional(),
   title: z.string().min(1, "Título é obrigatório"),
   releaseDate: z.string().min(1, "Data de lançamento é obrigatória"),
   originalTitle: z.string().min(1, "Título original é obrigatório"),
@@ -32,6 +34,7 @@ interface AddMovieModalProps {
 
 export interface MovieFormData {
   posterUrl: string
+  bannerUrl: string
   title: string
   releaseDate: string
   originalTitle: string
@@ -59,6 +62,7 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({
 
   const [formData, setFormData] = useState<MovieFormData>({
     posterUrl: "",
+    bannerUrl: "",
     title: "",
     releaseDate: new Date().toISOString().slice(0, 10),
     originalTitle: "",
@@ -70,9 +74,13 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({
 
   // Estado para armazenar o arquivo de poster selecionado
   const [posterFile, setPosterFile] = useState<File | null>(null)
-
   // Estado para visualizar a prévia da imagem selecionada
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
+  // Estado para armazenar o arquivo de banner selecionado
+  const [bannerFile, setBannerFile] = useState<File | null>(null)
+  // Estado para visualizar a prévia da imagem do banner selecionada
+  const [bannerPreviewUrl, setBannerPreviewUrl] = useState<string | null>(null)
 
   const [genreInput, setGenreInput] = useState<string>("")
 
@@ -127,6 +135,32 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({
     }
   }
 
+  // Manipula a seleção de arquivo para o banner
+  const handleBannerFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null
+
+    // Atualiza o estado com o arquivo selecionado
+    setBannerFile(file)
+
+    // Limpa os erros de validação para o banner
+    if (formErrors.bannerUrl) {
+      setFormErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors.bannerUrl
+        return newErrors
+      })
+    }
+
+    // Cria uma URL para pré-visualização da imagem
+    if (file) {
+      const fileUrl = URL.createObjectURL(file)
+      setBannerPreviewUrl(fileUrl)
+
+      // Limpa a bannerUrl já que estamos usando um arquivo
+      setFormData(prev => ({ ...prev, bannerUrl: "" }))
+    }
+  }
+
   // Opção para inserir URL manualmente ao invés de fazer upload
   const handlePosterUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value
@@ -143,6 +177,27 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({
       setFormErrors(prev => {
         const newErrors = { ...prev }
         delete newErrors.posterUrl
+        return newErrors
+      })
+    }
+  }
+
+  // Opção para inserir URL manualmente ao invés de fazer upload para o banner
+  const handleBannerUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value
+    setFormData({ ...formData, bannerUrl: url })
+
+    // Limpa o arquivo e a prévia se uma URL for inserida
+    if (url) {
+      setBannerFile(null)
+      setBannerPreviewUrl(null)
+    }
+
+    // Limpa os erros de validação para o banner
+    if (formErrors.bannerUrl) {
+      setFormErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors.bannerUrl
         return newErrors
       })
     }
@@ -192,7 +247,14 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({
 
       // Chama o serviço passando tanto os dados do formulário quanto o arquivo
       const res = await createMoveis(formData)
-      await imageMoveis(res.id, posterFile)
+
+      // Upload do poster
+      await imageMoveis(res.id, posterFile, "logo")
+
+      // Upload do banner (se existir)
+      if (bannerFile) {
+        await imageMoveis(res.id, bannerFile, "banner")
+      }
 
       // Notifica o componente pai
       onSaveMovie(formData)
@@ -203,6 +265,7 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({
       // Reseta o formulário para valores iniciais
       setFormData({
         posterUrl: "",
+        bannerUrl: "",
         title: "",
         releaseDate: new Date().toISOString().slice(0, 10),
         originalTitle: "",
@@ -213,6 +276,8 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({
       })
       setPosterFile(null)
       setPreviewUrl(null)
+      setBannerFile(null)
+      setBannerPreviewUrl(null)
     } catch (err: any) {
       setAlert({
         message: err.message || "Erro inesperado. Tente novamente mais tarde.",
@@ -404,33 +469,47 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({
           </S.PosterPreview>
         )}
 
-        {/* OU divisor */}
-        <S.OrDivider>
-          <span>OU</span>
-        </S.OrDivider>
-
-        {/* Campo para URL externa */}
-        <Input
-          id="posterUrl"
-          placeholder="URL do poster (alternativa ao upload)"
-          value={formData.posterUrl}
-          onChange={handlePosterUrlChange}
-          backgroundcolor={theme === "light" ? "var(--white)" : "#1a191c"}
-          placeholdercolor="#6f6d78"
-          style={{
-            border: "2px solid",
-            borderColor: formErrors.posterUrl
-              ? "var(--error)"
-              : theme === "light"
-              ? "var(--black)"
-              : "#232225",
-            color: theme === "light" ? "var(--black)" : "var(--white)",
-            ...getFieldErrorStyle("posterUrl")
-          }}
-        />
-
         {formErrors.posterUrl && (
           <S.ErrorMessage>{formErrors.posterUrl}</S.ErrorMessage>
+        )}
+      </S.FieldWrapper>
+
+      {/* Novo campo para o Banner do Filme */}
+      <S.FieldWrapper>
+        <Typography
+          as="h1"
+          size="1.5rem"
+          color={theme === "light" ? "var(--black)" : "var(--white)"}
+        >
+          Banner do Filme
+        </Typography>
+
+        {/* Área de upload de arquivo para o banner */}
+        <S.PosterUploadContainer>
+          <S.FileInputLabel theme={theme}>
+            <Input
+              id="bannerFile"
+              type="file"
+              accept="image/*"
+              onChange={handleBannerFileChange}
+              style={{ display: "none" }}
+            />
+            <S.UploadButton theme={theme}>Selecionar arquivo</S.UploadButton>
+            <span>
+              {bannerFile ? bannerFile.name : "Nenhum arquivo selecionado"}
+            </span>
+          </S.FileInputLabel>
+        </S.PosterUploadContainer>
+
+        {/* Pré-visualização da imagem do banner */}
+        {bannerPreviewUrl && (
+          <S.PosterPreview>
+            <img src={bannerPreviewUrl} alt="Prévia do banner" />
+          </S.PosterPreview>
+        )}
+
+        {formErrors.bannerUrl && (
+          <S.ErrorMessage>{formErrors.bannerUrl}</S.ErrorMessage>
         )}
       </S.FieldWrapper>
 

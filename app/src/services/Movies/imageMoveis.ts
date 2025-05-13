@@ -6,8 +6,8 @@ import api from "@/api/axios"
  * @param {File|null} posterFile - The poster image file to upload
  * @returns {Promise<Object|null>} The created movie or null if error
  */
-const imageMoveis = async (id, posterFile) => {
-  const url = `/movies/image/${id}`
+const imageMoveis = async (id, posterFile, name = "profile") => {
+  const url = `/image/upload/${id}`
 
   try {
     // Create a FormData object to handle file upload along with other data
@@ -15,7 +15,7 @@ const imageMoveis = async (id, posterFile) => {
 
     // Add the poster file if provided
     if (posterFile) {
-      formData.append("poster", posterFile)
+      formData.append(name, posterFile)
     }
 
     // Set proper headers for multipart/form-data

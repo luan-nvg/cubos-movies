@@ -1,19 +1,35 @@
 import api from "@/api/axios"
 
-const getMoveis = async (pageNumber = 1, pageSize = 10) => {
-  const url = "/movies"
-  const data = {
-    search: {
-      id: "",
-      title: ""
-    },
-    page: pageNumber,
-    limit: pageSize
+const getMovies = async (
+  pageNumber = 1,
+  pageSize = 10,
+  searchParams = { id: "", title: "" },
+  filters = {
+    minDuration: "",
+    maxDuration: "",
+    startDate: "",
+    endDate: "",
+    genre: ""
   }
+) => {
+  const url = "/movies"
 
   try {
-    const response = await api.get<any>(url, data)
-    const movies: any = response?.data
+    const response = await api.get(url, {
+      params: {
+        page: pageNumber,
+        limit: pageSize,
+        search: searchParams.title, // Enviando apenas o título como string de busca
+        ...(searchParams.id && { id: searchParams.id }),
+        ...(filters.minDuration && { minDuration: filters.minDuration }),
+        ...(filters.maxDuration && { maxDuration: filters.maxDuration }),
+        ...(filters.startDate && { startDate: filters.startDate }),
+        ...(filters.endDate && { endDate: filters.endDate }),
+        ...(filters.genre && { genre: filters.genre })
+      }
+    })
+
+    const movies = response?.data
     console.log("movies:", movies)
     return movies
   } catch (error) {
@@ -22,4 +38,4 @@ const getMoveis = async (pageNumber = 1, pageSize = 10) => {
   }
 }
 
-export default getMoveis
+export default getMovies
