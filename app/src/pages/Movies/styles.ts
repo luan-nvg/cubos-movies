@@ -82,6 +82,7 @@ export const Header = styled.header`
   max-width: 1200px;
   margin: 0 auto 2rem;
   padding: 0 2rem;
+  margin-top: 2rem;
 
   @media (max-width: 768px) {
     flex-direction: column;

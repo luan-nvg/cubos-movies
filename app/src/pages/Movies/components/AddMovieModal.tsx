@@ -403,9 +403,8 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({
         >
           Data de Lançamento *
         </Typography>
-        <Input
+        <S.DateTimePicker
           id="releaseDate"
-          type="date"
           value={formData.releaseDate}
           onChange={e => {
             setFormData({ ...formData, releaseDate: e.target.value })

@@ -123,7 +123,7 @@ const Movies = () => {
       image:
         movie.posterUrl ||
         "https://upload.wikimedia.org/wikipedia/pt/5/59/Captain_Marvel_%282018%29.jpg",
-      rating: movie.rating || 0,
+      rating: movie.rating || 65,
       year: movie.releaseDate
         ? new Date(movie.releaseDate).getFullYear()
         : 2025,

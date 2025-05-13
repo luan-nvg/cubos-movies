@@ -164,19 +164,15 @@ npm run format
 
 ## Environment Variables Reference
 
-| Variable                | Description                     | Default              |
-| ----------------------- | ------------------------------- | -------------------- |
-| `DATABASE_URL`          | PostgreSQL connection string    | -                    |
-| `JWT_SECRET`            | Secret for JWT token generation | -                    |
-| `AWS_REGION`            | AWS S3 region                   | -                    |
-| `AWS_ACCESS_KEY_ID`     | AWS access key                  | -                    |
-| `AWS_SECRET_ACCESS_KEY` | AWS secret key                  | -                    |
-| `S3_BUCKET_NAME`        | S3 bucket for file uploads      | -                    |
-| `SMTP_HOST`             | Email SMTP host                 | localhost            |
-| `SMTP_PORT`             | Email SMTP port                 | 1025                 |
-| `EMAIL_FROM`            | Sender email address            | noreply@movieapp.com |
-| `PORT`                  | Application port                | 3333                 |
-| `NODE_ENV`              | Environment mode                | development          |
+| Variable       | Description                     | Default              |
+| -------------- | ------------------------------- | -------------------- |
+| `DATABASE_URL` | PostgreSQL connection string    | -                    |
+| `JWT_SECRET`   | Secret for JWT token generation | -                    |
+| `SMTP_HOST`    | Email SMTP host                 | localhost            |
+| `SMTP_PORT`    | Email SMTP port                 | 1025                 |
+| `EMAIL_FROM`   | Sender email address            | noreply@movieapp.com |
+| `PORT`         | Application port                | 3333                 |
+| `NODE_ENV`     | Environment mode                | development          |
 
 ## Technologies
 

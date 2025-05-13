@@ -1,9 +1,11 @@
 import { useState } from "react"
 import { useIntl } from "react-intl"
 import Modal from "@/components/Modal"
-import { Input } from "@/components/Shared"
+import { Input, Typography } from "@/components/Shared"
 import * as S from "../styles"
 import moment from "moment"
+import AnimatedAlert from "@/components/Alert/AnimatedAlert"
+import { useTheme } from "@/hooks/useTheme"
 
 // Format date for API calls
 function formatDate(date: moment.MomentInput) {
@@ -40,6 +42,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
   onApplyFilters
 }) => {
   const intl = useIntl()
+  const { theme } = useTheme()
 
   const [alert, setAlert] = useState<{
     message: string
@@ -74,16 +77,21 @@ const FilterModal: React.FC<FilterModalProps> = ({
       onSave={handleSubmitFilters}
     >
       {alert && (
-        <S.FormGroup>
-          <AnimatedAlert
-            message={alert.message}
-            type={alert.type}
-            onClose={() => setAlert(null)}
-          />
-        </S.FormGroup>
+        <AnimatedAlert
+          message={alert.message}
+          type={alert.type}
+          onClose={() => setAlert(null)}
+        />
       )}
 
-      <S.FormGroup>
+      <S.FieldWrapper>
+        <Typography
+          as="h1"
+          size="1.5rem"
+          color={theme === "light" ? "var(--black)" : "var(--white)"}
+        >
+          Nome do Filme
+        </Typography>
         <Input
           id="title"
           placeholder="Nome do filme"
@@ -91,38 +99,61 @@ const FilterModal: React.FC<FilterModalProps> = ({
           onChange={e => {
             setFormData({ ...formData, title: e.target.value })
           }}
+          backgroundcolor={theme === "light" ? "var(--white)" : "#1a191c"}
+          placeholdercolor="#6f6d78"
+          style={{
+            border: "2px solid",
+            borderColor: theme === "light" ? "var(--black)" : "#232225",
+            color: theme === "light" ? "var(--black)" : "var(--white)"
+          }}
         />
-      </S.FormGroup>
+      </S.FieldWrapper>
 
-      <S.FormGroup>
-        <S.Label>
+      <S.FieldWrapper>
+        <Typography
+          as="h1"
+          size="1.5rem"
+          color={theme === "light" ? "var(--black)" : "var(--white)"}
+        >
           {intl.formatMessage({ id: "report.startDate.placeholder" })}
-        </S.Label>
+        </Typography>
         <S.DateTimePicker
           value={formData.initialDate}
           onChange={date => {
             setFormData({ ...formData, initialDate: date })
           }}
-          label={intl.formatMessage({
-            id: "report.endDate.placeholder"
-          })}
+          label={""}
+          style={{
+            backgroundColor: theme === "light" ? "var(--white)" : "#1a191c",
+            border: "2px solid",
+            borderColor: theme === "light" ? "var(--black)" : "#232225",
+            color: theme === "light" ? "var(--black)" : "var(--white)"
+          }}
         />
-      </S.FormGroup>
+      </S.FieldWrapper>
 
-      <S.FormGroup>
-        <S.Label>
+      <S.FieldWrapper>
+        <Typography
+          as="h1"
+          size="1.5rem"
+          color={theme === "light" ? "var(--black)" : "var(--white)"}
+        >
           {intl.formatMessage({ id: "report.endDate.placeholder" })}
-        </S.Label>
+        </Typography>
         <S.DateTimePicker
           value={formData.finalDate}
           onChange={date => {
             setFormData({ ...formData, finalDate: date })
           }}
-          label={intl.formatMessage({
-            id: "report.endDate.placeholder"
-          })}
+          label={""}
+          style={{
+            backgroundColor: theme === "light" ? "var(--white)" : "#1a191c",
+            border: "2px solid",
+            borderColor: theme === "light" ? "var(--black)" : "#232225",
+            color: theme === "light" ? "var(--black)" : "var(--white)"
+          }}
         />
-      </S.FormGroup>
+      </S.FieldWrapper>
     </Modal>
   )
 }
