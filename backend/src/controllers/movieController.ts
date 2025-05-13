@@ -1,7 +1,6 @@
 import { Request, Response } from "express"
 import { PrismaClient } from "@prisma/client"
 import { z } from "zod"
-import { uploadToS3 } from "../services/uploadService"
 import { scheduleEmailReminder } from "../services/emailService"
 import { RequestHandler } from "express"
 
@@ -92,54 +91,6 @@ export const updateMovie: RequestHandler = async (req, res): Promise<void> => {
     if (new Date(releaseDate) > new Date()) {
       await scheduleEmailReminder(updatedMovie.id, req.userId)
     }
-
-    res.json(updatedMovie)
-  } catch (error) {
-    console.error(error)
-    if (error instanceof z.ZodError) {
-      res.status(400).json({
-        error: "Falha na validação",
-        details: error.errors
-      })
-    }
-    res.status(500).json({ error: "Falha ao atualizar o filme" })
-  }
-}
-
-export const imageMovie: RequestHandler = async (req, res): Promise<void> => {
-  console.log("ta entando aqui?")
-  try {
-    if (!req.userId) {
-      res.status(401).json({ error: "Não autorizado" })
-      return
-    }
-
-    const { id } = req.params
-
-    const existingMovie = await prisma.movie.findFirst({
-      where: {
-        id,
-        userId: req.userId
-      }
-    })
-
-    if (!existingMovie) {
-      res.status(404).json({ error: "Filme não encontrado" })
-      return
-    }
-
-    let posterUrl = existingMovie.posterUrl
-    if (req.file) {
-      posterUrl = await uploadToS3(req.file, `movies/${id}`)
-    }
-
-    const updatedMovie = await prisma.movie.update({
-      where: { id },
-      data: {
-        ...existingMovie,
-        posterUrl
-      }
-    })
 
     res.json(updatedMovie)
   } catch (error) {
@@ -245,11 +196,18 @@ export const getMovies = async (req: Request, res: Response) => {
       orderBy: { createdAt: "desc" }
     })
 
+    const moviesWithPosterUrl = movies.map(movie => ({
+      ...movie,
+      posterUrl: `${req.protocol}://${req.get(
+        "host"
+      )}/image?imageName=logo&movieId=${movie.id}`
+    }))
+
     // Get total count for pagination
     const total = await prisma.movie.count({ where })
 
     res.json({
-      movies,
+      movies: moviesWithPosterUrl,
       pagination: {
         page,
         limit,

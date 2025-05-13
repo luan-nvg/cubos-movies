@@ -4,8 +4,7 @@ import {
   updateMovie,
   deleteMovie,
   getMovies,
-  getMovieById,
-  imageMovie
+  getMovieById
 } from "../controllers/movieController"
 import { authMiddleware } from "../middleware/authMiddleware"
 

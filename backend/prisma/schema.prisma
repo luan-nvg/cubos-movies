@@ -26,7 +26,6 @@ model Movie {
   description   String?
   releaseDate   DateTime
   budget        Float?
-  posterUrl     String?
   genres        String[]
   duration      Int? // in minutes
   user          User     @relation(fields: [userId], references: [id])

@@ -1,10 +1,22 @@
+import { useNavigate } from "react-router-dom"
 import * as S from "./styles"
 
 const Movies = ({ movies, ...rest }) => {
+  const navigate = useNavigate()
+
+  const handleMovieClick = movieId => {
+    // Navega para a página de detalhes passando o ID do filme
+    navigate(`/movies-detail/${movieId}`)
+  }
+
   return (
     <S.MoviesGrid {...rest}>
-      {movies.map((movie: any) => (
-        <S.MovieCard key={movie.id}>
+      {movies.map(movie => (
+        <S.MovieCard
+          key={movie.id}
+          onClick={() => handleMovieClick(movie.id)}
+          className="cursor-pointer hover:shadow-lg transition-shadow duration-300"
+        >
           <S.MoviePoster>
             <S.RatingCircle>
               <S.ProgressSvg viewBox="0 0 36 36">
