@@ -2,21 +2,27 @@ import { useState } from "react"
 import { Typography } from "@/components/Shared"
 import Input from "../InputComponent"
 import { useForm } from "react-hook-form"
-import { ILoginData } from "./interface"
 import * as S from "./styles"
-import onLoginSubmit from "@/services/Auth/Auth"
+import onLoginSubmit from "@/services/Auth/AuthRegister"
 import { ButtonComponent } from "@/components/Button/styles"
 import { useAuth } from "@/contexts/AuthContext"
 import AnimatedAlert from "@/components/Alert/AnimatedAlert"
 import axios from "axios"
 import { useTheme } from "../../hooks/useTheme"
-import { useNavigate } from "react-router-dom"
+
+// Updated interface to include name and passwordConfirmation
+interface ILoginData {
+  name: string
+  email: string
+  password: string
+  passwordConfirmation: string
+}
 
 export function LoginForm() {
   const {
     register,
     handleSubmit,
-    // setError,
+    watch,
     clearErrors,
     formState: { errors }
   } = useForm<ILoginData>()
@@ -27,7 +33,9 @@ export function LoginForm() {
   } | null>(null)
 
   const { theme } = useTheme()
-  const navigate = useNavigate()
+
+  // Watch password field for comparison
+  const password = watch("password")
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -35,7 +43,12 @@ export function LoginForm() {
   }
 
   const handleLogin = async (data: ILoginData) => {
-    if (!data.email || !data.password) {
+    if (
+      !data.name ||
+      !data.email ||
+      !data.password ||
+      !data.passwordConfirmation
+    ) {
       setAlert({
         message: "Por favor, preencha todos os campos.",
         type: "warning"
@@ -51,7 +64,23 @@ export function LoginForm() {
       return
     }
 
-    clearErrors("email")
+    if (data.password.length < 6) {
+      setAlert({
+        message: "A senha deve ter pelo menos 6 digitos",
+        type: "error"
+      })
+      return
+    }
+
+    if (data.password !== data.passwordConfirmation) {
+      setAlert({
+        message: "As senhas não coincidem.",
+        type: "error"
+      })
+      return
+    }
+
+    clearErrors()
 
     try {
       await onLoginSubmit(
@@ -93,29 +122,55 @@ export function LoginForm() {
       )}
 
       <S.Form onSubmit={handleSubmit(handleLogin)}>
+        {/* New Name field */}
         <S.FieldWrapper>
           <Typography
             as="h1"
             size="1.5rem"
             color={theme === "light" ? "var(--black)" : "var(--white)"}
           >
-            Nome/E-mail
+            Nome
           </Typography>
 
           <Input
-            placeholder="Digite seu nome/E-mail"
+            placeholder="Digite seu nome completo"
+            id="name"
+            type="text"
+            {...register("name")}
+            backgroundcolor={theme === "light" ? "var(--white)" : "#1a191c"}
+            placeholdercolor="#6f6d78"
+            style={{
+              border: "2px solid",
+              borderColor: theme === "light" ? "var(--black)" : "#232225",
+              color: theme === "light" ? "var(--black)" : "var(--white)"
+            }}
+          />
+        </S.FieldWrapper>
+
+        <S.FieldWrapper>
+          <Typography
+            as="h1"
+            size="1.5rem"
+            color={theme === "light" ? "var(--black)" : "var(--white)"}
+          >
+            E-mail
+          </Typography>
+
+          <Input
+            placeholder="Digite seu E-mail"
             id="email"
             type="text"
             {...register("email")}
             backgroundcolor={theme === "light" ? "var(--white)" : "#1a191c"}
             placeholdercolor="#6f6d78"
             style={{
-              border: "2px solid", // ou use borderColor em vez de border
+              border: "2px solid",
               borderColor: theme === "light" ? "var(--black)" : "#232225",
               color: theme === "light" ? "var(--black)" : "var(--white)"
             }}
           />
         </S.FieldWrapper>
+
         <S.FieldWrapper>
           <Typography
             as="h1"
@@ -133,7 +188,32 @@ export function LoginForm() {
             backgroundcolor={theme === "light" ? "var(--white)" : "#1a191c"}
             placeholdercolor="#6f6d78"
             style={{
-              border: "2px solid", // ou use borderColor em vez de border
+              border: "2px solid",
+              borderColor: theme === "light" ? "var(--black)" : "#232225",
+              color: theme === "light" ? "var(--black)" : "var(--white)"
+            }}
+          />
+        </S.FieldWrapper>
+
+        {/* New Password Confirmation field */}
+        <S.FieldWrapper>
+          <Typography
+            as="h1"
+            size="1.5rem"
+            color={theme === "light" ? "var(--black)" : "var(--white)"}
+          >
+            Confirmar Senha
+          </Typography>
+
+          <Input
+            placeholder="Confirme a sua senha"
+            type="password"
+            id="passwordConfirmation"
+            {...register("passwordConfirmation")}
+            backgroundcolor={theme === "light" ? "var(--white)" : "#1a191c"}
+            placeholdercolor="#6f6d78"
+            style={{
+              border: "2px solid",
               borderColor: theme === "light" ? "var(--black)" : "#232225",
               color: theme === "light" ? "var(--black)" : "var(--white)"
             }}
@@ -141,30 +221,8 @@ export function LoginForm() {
         </S.FieldWrapper>
 
         <S.LinksWrapper>
-          <Typography
-            as="h1"
-            size="1.5rem"
-            // color={theme === "light" ? "var(--black)" : "var(--white)"}
-            color={"var(--primary)"}
-            textdecoration="underline"
-          >
-            Esqueci minha senha
-          </Typography>
-
-          <ButtonComponent type="submit" textbutton="Entrar" />
+          <ButtonComponent type="submit" textbutton="Cadastrar" />
         </S.LinksWrapper>
-
-        <Typography
-          as="h1"
-          size="1.5rem"
-          // color={theme === "light" ? "var(--black)" : "var(--white)"}
-          color={"var(--primary)"}
-          onClick={() => {
-            navigate("/register")
-          }}
-        >
-          Não possui conta? clique aqui
-        </Typography>
       </S.Form>
     </S.Main>
   )

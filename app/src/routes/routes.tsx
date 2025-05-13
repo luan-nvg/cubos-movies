@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router-dom"
 import LoginPage from "@/pages/Login"
-import { Register } from "@/pages/Register"
+import Register from "@/pages/Register"
 import DefaultLayout from "@/layout/DefaultLayout"
 
 import { PageNotFound } from "@/pages/PageNotFound"
